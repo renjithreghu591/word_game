@@ -18,6 +18,7 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,7 +56,8 @@ public class ListWordsActivity extends AppCompatActivity {
             meaningList.add(sharedPreferences.getString(str, "null"));
         }
 
-        listView.setAdapter(new WordListAdapter(getApplicationContext(), R.layout.word_list_layout, wordList, meaningList));
+        Adapter adapter = new WordListAdapter(getApplicationContext(), R.layout.word_list_layout, wordList, meaningList);
+        listView.setAdapter((ListAdapter) adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             int isSelected = 0;
@@ -89,16 +91,47 @@ public class ListWordsActivity extends AppCompatActivity {
                 builder.setTitle("Options").setView(v).setNegativeButton("Back", null).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        String wordStr = wordList.get((int) l);
+                        String meaningStr = meaningList.get((int) l);
                         switch (isSelected) {
                             case 0:
                                 break;
 
                             case 1:
+                                View view1 = LayoutInflater.from(ListWordsActivity.this).inflate(R.layout.new_word_layout, null);
+                                TextView tv = view1.findViewById(R.id.etxt_new_word);
+                                TextView tv1 = view1.findViewById(R.id.etxt_new_word_meaning);
+
+                                tv.setHint(wordStr);
+                                tv1.setHint(meaningStr);
+
+                                builder.setView(view1).setTitle("Edit").setPositiveButton("Change", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        String tvStr = tv.getText().toString();
+                                        String tv1Str = tv1.getText().toString();
+                                        if (!tvStr.equals("") && !tv1Str.equals("")) {
+                                            sharedPreferences.edit().remove(wordStr).commit();
+                                            sharedPreferences.edit().putString(tvStr, tv1Str).commit();
+
+                                            wordList.remove((int) l);
+                                            wordList.add(tvStr);
+                                            meaningList.remove((int) l);
+                                            meaningList.add(tv1Str);
+                                            ((WordListAdapter) adapter).notifyDataSetChanged();
+                                        }
+                                    }
+                                });
+                                builder.show();
                                 Toast.makeText(getApplicationContext(), "edit", Toast.LENGTH_SHORT).show();
                                 break;
 
                             case 2:
-                                Toast.makeText(getApplicationContext(), "delete", Toast.LENGTH_SHORT).show();
+
+                                sharedPreferences.edit().remove(wordStr).commit();
+                                wordList.remove((int) l);
+                                meaningList.remove((int) l);
+                                ((WordListAdapter) adapter).notifyDataSetChanged();
                                 break;
                         }
                     }
