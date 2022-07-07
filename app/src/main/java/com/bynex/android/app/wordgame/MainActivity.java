@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
         newWord = findViewById(R.id.new_word);
         listWords = findViewById(R.id.list);
+        play = findViewById(R.id.play);
 
         newWord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,6 +68,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, ListWordsActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, PlayingActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
     }
