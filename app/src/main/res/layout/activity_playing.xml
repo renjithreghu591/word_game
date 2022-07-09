@@ -16,10 +16,24 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/txt_meaning_dis"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/speek"
         app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
+
+    <ImageButton
+        android:id="@+id/speek"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginLeft="25dp"
+        android:background="@drawable/ic_volumeup"
+        app:layout_constraintBottom_toBottomOf="@+id/txt_word_dis"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/txt_word_dis"
+        app:layout_constraintTop_toTopOf="@+id/txt_word_dis" />
 
     <TextView
         android:id="@+id/txt_meaning_dis"
