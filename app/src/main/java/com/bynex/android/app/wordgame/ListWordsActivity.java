@@ -66,8 +66,8 @@ public class ListWordsActivity extends AppCompatActivity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(ListWordsActivity.this);
 
                 View v = LayoutInflater.from(ListWordsActivity.this).inflate(R.layout.list_edit_delete, null);
-                ImageButton edit = v.findViewById(R.id.img_list_edit);
-                ImageButton delete = v.findViewById(R.id.img_list_delete);
+                ImageButton edit = v.findViewById(R.id.listedit_imgbtn_edit);
+                ImageButton delete = v.findViewById(R.id.listedit_imgbtn_delete);
 
 
                 edit.setOnClickListener(new View.OnClickListener() {

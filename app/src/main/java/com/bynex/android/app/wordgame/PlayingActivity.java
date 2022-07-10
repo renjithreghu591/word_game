@@ -10,6 +10,7 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +27,7 @@ public class PlayingActivity extends AppCompatActivity {
     TextView word, meaning;
     Button play;
     ImageButton speek;
+    CheckBox correctAns;
     private TextToSpeech tts;
 
 
@@ -50,6 +52,7 @@ public class PlayingActivity extends AppCompatActivity {
         word = findViewById(R.id.txt_word_dis);
         meaning = findViewById(R.id.txt_meaning_dis);
         speek = findViewById(R.id.speek);
+        correctAns = findViewById(R.id.main_chekbox_currect);
 
         if (wordList.size() <= 0) {
             Toast.makeText(getApplicationContext(), "Please add some words", Toast.LENGTH_SHORT).show();
@@ -66,6 +69,8 @@ public class PlayingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (play.getText().toString().equals("Show") && wordList.size() > 0) {
                     meaning.setVisibility(View.VISIBLE);
+                    correctAns.setVisibility(View.VISIBLE);
+                    correctAns.setChecked(true);
                     play.setText("Next");
                     wordList.remove(0);
                     Collections.shuffle(wordList);
@@ -74,6 +79,7 @@ public class PlayingActivity extends AppCompatActivity {
                     }
                 } else if (play.getText().toString().equals("Next") && wordList.size() > 0) {
                     meaning.setVisibility(View.INVISIBLE);
+                    correctAns.setVisibility(View.INVISIBLE);
                     word.setText(wordList.get(0));
                     meaning.setText(words.getString(wordList.get(0), "null"));
                     play.setText("Show");
