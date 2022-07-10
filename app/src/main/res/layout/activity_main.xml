@@ -4,66 +4,85 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="@drawable/word_game_background">
 
-    <TextView
-        android:id="@+id/title"
+    <ImageButton
+        android:id="@+id/main_imgbtn_playsettings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
+        android:src="@drawable/ic_settings"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="@+id/main_btn_playgame"
+        app:layout_constraintEnd_toStartOf="@+id/main_btn_playgame"
+        app:layout_constraintTop_toTopOf="@+id/main_btn_playgame" />
+
+    <TextView
+        android:id="@+id/main_txt_title"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
         android:text="Word Game"
-        android:textSize="25sp"
-        android:textStyle="bold"
+        android:textColor="#06FA27"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/main_view_centerdivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
-        android:id="@+id/view"
+        android:id="@+id/main_view_centerdivider"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:background="@color/black"
-        app:layout_constraintTop_toBottomOf="@+id/title"
-        tools:layout_editor_absoluteX="10dp" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view" >
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/play"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Play"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/new_word"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New word"
-            android:layout_marginTop="5dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/play" />
+    <Button
+        android:id="@+id/main_btn_playgame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:text="Play Game"
+        android:textSize="25sp"
+        app:layout_constraintBottom_toTopOf="@+id/main_btn_addword"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.756"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_view_centerdivider"
+        app:layout_constraintVertical_chainStyle="packed" />
 
-        <Button
-            android:id="@+id/list"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="List words"
-            android:layout_marginTop="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/new_word" />
+    <Button
+        android:id="@+id/main_btn_addword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:text="Add word"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/main_btn_category"
+        app:layout_constraintEnd_toEndOf="@+id/main_btn_playgame"
+        app:layout_constraintTop_toBottomOf="@+id/main_btn_playgame" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/main_btn_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:text="Category"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/main_btn_settings"
+        app:layout_constraintEnd_toEndOf="@+id/main_btn_addword"
+        app:layout_constraintTop_toBottomOf="@+id/main_btn_addword" />
+
+    <Button
+        android:id="@+id/main_btn_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:text="Settings"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/main_btn_category"
+        app:layout_constraintTop_toBottomOf="@+id/main_btn_category" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -36,7 +36,14 @@ public class PlayingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playing);
 
-        SharedPreferences words = getApplicationContext().getSharedPreferences("words", Context.MODE_PRIVATE);
+        String currentPlayMode = getIntent().getStringExtra("currentPlayMode");
+
+        if (currentPlayMode == null || currentPlayMode.equals("")) {
+            Toast.makeText(getApplicationContext(), "Please select play mode", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        SharedPreferences words = getApplicationContext().getSharedPreferences(currentPlayMode, Context.MODE_PRIVATE);
 
         Map<String, ?> map = words.getAll();
         Set<String> set = map.keySet();
@@ -88,6 +95,7 @@ public class PlayingActivity extends AppCompatActivity {
                     }
                 } else if (play.getText().toString().equals("End Game")) {
                     Intent intent = new Intent(PlayingActivity.this, MainActivity.class);
+                    intent.putExtra("currentPlayMode", currentPlayMode);
                     startActivity(intent);
                     finish();
                 }
