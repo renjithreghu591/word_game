@@ -29,19 +29,21 @@ public class PlayingActivity extends AppCompatActivity {
     ImageButton speek;
     CheckBox correctAns;
     private TextToSpeech tts;
-
+    String currentPlayMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playing);
 
-        String currentPlayMode = getIntent().getStringExtra("currentPlayMode");
+        currentPlayMode = getIntent().getStringExtra(Values.CURRENT_PLAY_MODE);
 
         if (currentPlayMode == null || currentPlayMode.equals("")) {
             Toast.makeText(getApplicationContext(), "Please select play mode", Toast.LENGTH_SHORT).show();
             finish();
         }
+
+        SharedPreferences defaultCategory = getApplicationContext().getSharedPreferences(Values.WRONG_WORDS, Context.MODE_PRIVATE);
 
         SharedPreferences words = getApplicationContext().getSharedPreferences(currentPlayMode, Context.MODE_PRIVATE);
 
@@ -85,6 +87,11 @@ public class PlayingActivity extends AppCompatActivity {
                         play.setText("End Game");
                     }
                 } else if (play.getText().toString().equals("Next") && wordList.size() > 0) {
+
+                    if (!correctAns.isChecked()) {
+                        defaultCategory.edit().putString(word.getText().toString(), meaning.getText().toString()).commit();
+                    }
+
                     meaning.setVisibility(View.INVISIBLE);
                     correctAns.setVisibility(View.INVISIBLE);
                     word.setText(wordList.get(0));

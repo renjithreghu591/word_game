@@ -2,13 +2,19 @@ package com.bynex.android.app.wordgame;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,11 +27,13 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +70,27 @@ public class CategoryActivity extends AppCompatActivity {
         Adapter adapter = new CategoryComponentsAdapter(getApplicationContext(), R.layout.category_components_layout, categoriesList);
         categoryListView.setAdapter((ListAdapter) adapter);
 
+        title.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.toString().equals(Values.WRONG_WORDS)) {
+                    addCategory.setEnabled(false);
+                } else {
+                    addCategory.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         addCategory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,6 +116,8 @@ public class CategoryActivity extends AppCompatActivity {
                     }).setCancelable(false);
 
                     builder.show();
+                } else if (titleText.equals(Values.WRONG_WORDS)) {
+
                 } else {
                     SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(titleText, Context.MODE_PRIVATE);
 
@@ -160,6 +191,7 @@ public class CategoryActivity extends AppCompatActivity {
             this.context = context;
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.O)
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -167,6 +199,18 @@ public class CategoryActivity extends AppCompatActivity {
 
 
             if (title.getText().toString().equals("Categories")) {
+                for (int i = 0; i < categories.size(); i++) {
+                    if (categories.get(i).equals(Values.WRONG_WORDS)) {
+                        categories.remove(i);
+                        break;
+                    }
+                }
+
+                Collections.sort(categories);
+                categories.add(0, Values.WRONG_WORDS);
+
+
+
                 CategoryComponentHolder categoryComponentHolder = new CategoryComponentHolder();
 
                 if (convertView == null) {
@@ -174,9 +218,19 @@ public class CategoryActivity extends AppCompatActivity {
                     convertView = inflater.inflate(resource, parent , false);
 
                     CategoryComponentHolder categoryComponentHolder1 = new CategoryComponentHolder();
-                    categoryComponentHolder1.category = (Button) convertView.findViewById(R.id.category_btn_category);
+                    categoryComponentHolder1.category = (TextView) convertView.findViewById(R.id.category_txt_categoryname);
                     categoryComponentHolder1.edit = (ImageButton) convertView.findViewById(R.id.category_imgbtn_edit);
                     categoryComponentHolder1.delete = (ImageButton) convertView.findViewById(R.id.category_imgbtn_delete);
+                    categoryComponentHolder1.progressBar = (ProgressBar) convertView.findViewById(R.id.category_progressBar);
+
+                    if (categories.get(position).equals(Values.WRONG_WORDS)) {
+                        categoryComponentHolder1.edit.setEnabled(false);
+                        categoryComponentHolder1.delete.setEnabled(false);
+                        categoryComponentHolder1.category.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+                        categoryComponentHolder1.category.setTextSize(categoryComponentHolder1.category.getAutoSizeMinTextSize());
+                        categoryComponentHolder1.category.setTextColor(Color.RED);
+                        categoryComponentHolder1.progressBar.setProgress(0);
+                    }
 
                     categoryComponentHolder1.edit.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -379,8 +433,9 @@ public class CategoryActivity extends AppCompatActivity {
     }
 
     public class CategoryComponentHolder {
-        Button category;
+        TextView category;
         ImageButton edit, delete;
+        ProgressBar progressBar;
     }
 
     public class ListWordsHolder {

@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -25,14 +26,18 @@ public class MainActivity extends AppCompatActivity {
 
     Button play, newWord, listWords;
     ImageButton playingConfiguration;
-    String currentPlayMode = null;
+    String currentPlayMode;
+
+    SharedPreferences appLog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        currentPlayMode = getIntent().getStringExtra("currentPlayMode");
+         appLog = getApplicationContext().getSharedPreferences(Values.APP_LOG, Context.MODE_PRIVATE);
+
+        currentPlayMode = appLog.getString(Values.CURRENT_PLAY_MODE, null);
 
         newWord = findViewById(R.id.main_btn_addword);
         listWords = findViewById(R.id.main_btn_category);
@@ -77,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (!str.equals("")) {
                             currentPlayMode = str;
+                            appLog.edit().putString(Values.CURRENT_PLAY_MODE, currentPlayMode).commit();
                         }
                     }
                 }).show();
@@ -166,6 +172,8 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("currentPlayMode", currentPlayMode);
                     startActivity(intent);
                     finish();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please select category", Toast.LENGTH_SHORT).show();
                 }
             }
         });
