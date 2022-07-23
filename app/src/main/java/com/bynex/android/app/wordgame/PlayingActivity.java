@@ -38,6 +38,8 @@ public class PlayingActivity extends AppCompatActivity {
 
         currentPlayMode = getIntent().getStringExtra(Values.CURRENT_PLAY_MODE);
 
+        Data data = new Data(PlayingActivity.this);
+
         if (currentPlayMode == null || currentPlayMode.equals("")) {
             Toast.makeText(getApplicationContext(), "Please select play mode", Toast.LENGTH_SHORT).show();
             finish();
@@ -88,8 +90,25 @@ public class PlayingActivity extends AppCompatActivity {
                     }
                 } else if (play.getText().toString().equals("Next") && wordList.size() > 0) {
 
+                    SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(Values.WRONG_WORDS, Context.MODE_PRIVATE);
                     if (!correctAns.isChecked()) {
-                        defaultCategory.edit().putString(word.getText().toString(), meaning.getText().toString()).commit();
+                        if (sharedPreferences.getString(currentPlayMode + " Wrong", null) == null) {
+                            sharedPreferences.edit().putString(currentPlayMode + " Wrong", "true").commit();
+                        }
+
+                        SharedPreferences sharedPreferences1 = getApplicationContext().getSharedPreferences(currentPlayMode + " Wrong", Context.MODE_PRIVATE);
+                        sharedPreferences1.edit().putString(word.getText().toString(), meaning.getText().toString()).commit();
+
+                    } else {
+                        if (sharedPreferences.getString(currentPlayMode + " Wrong", null) != null) {
+                            SharedPreferences sharedPreferences1 = getApplicationContext().getSharedPreferences(currentPlayMode + " Wrong", Context.MODE_PRIVATE);
+                            sharedPreferences1.edit().remove(word.getText().toString()).commit();
+
+                            if (data.getSize(currentPlayMode + " Wrong") <= 0) {
+                                sharedPreferences1.edit().clear().commit();
+                                sharedPreferences.edit().remove(currentPlayMode + " Wrong").commit();
+                            }
+                        }
                     }
 
                     meaning.setVisibility(View.INVISIBLE);
@@ -101,6 +120,28 @@ public class PlayingActivity extends AppCompatActivity {
                         play.setText("End Game");
                     }
                 } else if (play.getText().toString().equals("End Game")) {
+
+                    SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(Values.WRONG_WORDS, Context.MODE_PRIVATE);
+                    if (!correctAns.isChecked()) {
+                        if (sharedPreferences.getString(currentPlayMode + " Wrong", null) == null) {
+                            sharedPreferences.edit().putString(currentPlayMode + " Wrong", "true").commit();
+                        }
+
+                        SharedPreferences sharedPreferences1 = getApplicationContext().getSharedPreferences(currentPlayMode + " Wrong", Context.MODE_PRIVATE);
+                        sharedPreferences1.edit().putString(word.getText().toString(), meaning.getText().toString()).commit();
+
+                    } else {
+                        if (sharedPreferences.getString(currentPlayMode + " Wrong", null) != null) {
+                            SharedPreferences sharedPreferences1 = getApplicationContext().getSharedPreferences(currentPlayMode + " Wrong", Context.MODE_PRIVATE);
+                            sharedPreferences1.edit().remove(word.getText().toString()).commit();
+
+                            if (data.getSize(currentPlayMode + " Wrong") <= 0) {
+                                sharedPreferences1.edit().clear().commit();
+                                sharedPreferences.edit().remove(currentPlayMode + " Wrong").commit();
+                            }
+                        }
+                    }
+
                     Intent intent = new Intent(PlayingActivity.this, MainActivity.class);
                     intent.putExtra("currentPlayMode", currentPlayMode);
                     startActivity(intent);

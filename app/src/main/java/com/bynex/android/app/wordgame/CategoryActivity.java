@@ -44,6 +44,9 @@ public class CategoryActivity extends AppCompatActivity {
     ListView categoryListView;
     com.google.android.material.floatingactionbutton.FloatingActionButton addCategory;
     TextView title;
+    Data data = new Data(CategoryActivity.this);
+
+    int listViewPage = Values.PAGE_CATEGORIES;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,20 +57,8 @@ public class CategoryActivity extends AppCompatActivity {
         addCategory = findViewById(R.id.floatingActionButton);
         title = findViewById(R.id.category_title);
 
-        SharedPreferences sharedPreferencesCategories = getApplicationContext().getSharedPreferences("categories", Context.MODE_PRIVATE);
-
-        Map<String, ?> map = sharedPreferencesCategories.getAll();
-        Set<String> set = map.keySet();
-
-        ArrayList<String> categoriesList = new ArrayList<>();
-
-        Iterator iterator = set.iterator();
-
-        while (iterator.hasNext()) {
-            categoriesList.add(iterator.next().toString());
-        }
-
-        Adapter adapter = new CategoryComponentsAdapter(getApplicationContext(), R.layout.category_components_layout, categoriesList);
+        listViewPage = Values.PAGE_CATEGORIES;
+        Adapter adapter = new CategoryComponentsAdapter(getApplicationContext(), R.layout.category_components_layout, data.getList(Values.CATEGORIES));
         categoryListView.setAdapter((ListAdapter) adapter);
 
         title.addTextChangedListener(new TextWatcher() {
@@ -107,10 +98,12 @@ public class CategoryActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialogInterface, int i) {
                             String str = newCategoryName.getText().toString();
                             if (!str.equals("")) {
-                                sharedPreferencesCategories.edit().putString(str, "true").commit();
-                                Adapter adapter1 = categoryListView.getAdapter();
-                                ((CategoryComponentsAdapter) adapter1).categories.add(str);
-                                ((CategoryComponentsAdapter) adapter1).notifyDataSetChanged();
+
+                                if (data.createCategory(str)) {
+                                    Adapter adapter1 = categoryListView.getAdapter();
+                                    ((CategoryComponentsAdapter) adapter1).categories.add(str);
+                                    ((CategoryComponentsAdapter) adapter1).notifyDataSetChanged();
+                                }
                             }
                         }
                     }).setCancelable(false);
@@ -119,7 +112,7 @@ public class CategoryActivity extends AppCompatActivity {
                 } else if (titleText.equals(Values.WRONG_WORDS)) {
 
                 } else {
-                    SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(titleText, Context.MODE_PRIVATE);
+                    //SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(titleText, Context.MODE_PRIVATE);
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(CategoryActivity.this);
                     View v = LayoutInflater.from(CategoryActivity.this).inflate(R.layout.addword_current_category_layout, null);
@@ -133,15 +126,13 @@ public class CategoryActivity extends AppCompatActivity {
                             String newWordMeaningStr = newWordMeaning.getText().toString();
 
                             if (!newWordStr.equals("") && !newWordMeaningStr.equals("")) {
-                                if (sharedPreferences.getString(newWordStr, null) != null) {
-                                    Toast.makeText(getApplicationContext(), "Word alredy exited", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    sharedPreferences.edit().putString(newWordStr, newWordMeaningStr).commit();
 
+                                if (data.add(titleText, newWordStr, newWordMeaningStr)) {
                                     Adapter adapter1 = categoryListView.getAdapter();
                                     ((CategoryComponentsAdapter) adapter1).categories.add(newWordStr);
                                     ((CategoryComponentsAdapter) adapter1).notifyDataSetChanged();
                                 }
+
                             } else {
                                 Toast.makeText(getApplicationContext(), "Please fill data", Toast.LENGTH_SHORT).show();
                             }
@@ -156,25 +147,27 @@ public class CategoryActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed(){
-        if (title.getText().toString().equals("Categories") || title == null) {
-            super.onBackPressed();
-        } else {
-            SharedPreferences sharedPreferencesCategories = getApplicationContext().getSharedPreferences("categories", Context.MODE_PRIVATE);
 
-            Map<String, ?> map = sharedPreferencesCategories.getAll();
-            Set<String> set = map.keySet();
+        switch (listViewPage) {
+            case Values.PAGE_CATEGORIES:
+                super.onBackPressed();
+                break;
 
-            ArrayList<String> categoriesList = new ArrayList<>();
+            case Values.PAGE_CATEGORY:
 
-            Iterator iterator = set.iterator();
+            case Values.PAGE_WRONG_CATEGORIES:
+                title.setText("Categories");
+                listViewPage = Values.PAGE_CATEGORIES;
+                Adapter adapter = new CategoryComponentsAdapter(getApplicationContext(), R.layout.category_components_layout, data.getList(Values.CATEGORIES));
+                categoryListView.setAdapter((ListAdapter) adapter);
+                break;
 
-            while (iterator.hasNext()) {
-                categoriesList.add(iterator.next().toString());
-            }
-
-            Adapter adapter = new CategoryComponentsAdapter(getApplicationContext(), R.layout.category_components_layout, categoriesList);
-            title.setText("Categories");
-            categoryListView.setAdapter((ListAdapter) adapter);
+            case Values.PAGE_WRONG_CATEGORY:
+                title.setText(Values.WRONG_WORDS);
+                listViewPage = Values.PAGE_WRONG_CATEGORIES;
+                Adapter adapter1 = new WrongCategoryComponentsAdapter(getApplicationContext(), R.layout.wrong_category_components_layout, data.getList(Values.WRONG_WORDS));
+                categoryListView.setAdapter((WrongCategoryComponentsAdapter) adapter1);
+                break;
         }
     }
 
@@ -198,7 +191,7 @@ public class CategoryActivity extends AppCompatActivity {
 
 
 
-            if (title.getText().toString().equals("Categories")) {
+            if (listViewPage == Values.PAGE_CATEGORIES) {
                 for (int i = 0; i < categories.size(); i++) {
                     if (categories.get(i).equals(Values.WRONG_WORDS)) {
                         categories.remove(i);
@@ -222,6 +215,8 @@ public class CategoryActivity extends AppCompatActivity {
                     categoryComponentHolder1.edit = (ImageButton) convertView.findViewById(R.id.category_imgbtn_edit);
                     categoryComponentHolder1.delete = (ImageButton) convertView.findViewById(R.id.category_imgbtn_delete);
                     categoryComponentHolder1.progressBar = (ProgressBar) convertView.findViewById(R.id.category_progressBar);
+                    categoryComponentHolder1.maxCount = (TextView) convertView.findViewById(R.id.category_txt_outof);
+                    categoryComponentHolder1.progCount = (TextView) convertView.findViewById(R.id.category_txt_progcount);
 
                     if (categories.get(position).equals(Values.WRONG_WORDS)) {
                         categoryComponentHolder1.edit.setEnabled(false);
@@ -230,83 +225,80 @@ public class CategoryActivity extends AppCompatActivity {
                         categoryComponentHolder1.category.setTextSize(categoryComponentHolder1.category.getAutoSizeMinTextSize());
                         categoryComponentHolder1.category.setTextColor(Color.RED);
                         categoryComponentHolder1.progressBar.setProgress(0);
-                    }
+                        categoryComponentHolder1.maxCount.setVisibility(View.INVISIBLE);
+                        categoryComponentHolder1.progCount.setVisibility(View.INVISIBLE);
 
-                    categoryComponentHolder1.edit.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(CategoryActivity.this);
-                            View v = LayoutInflater.from(CategoryActivity.this).inflate(R.layout.category_add_layout, null);
-                            com.google.android.material.textfield.TextInputEditText textInputEditText = v.findViewById(R.id.category_material_etxt);
-                            com.google.android.material.textfield.TextInputLayout textInputLayout = v.findViewById(R.id.category_material_inputlayout);
-                            textInputLayout.setHint(categories.get(position));
-
-                            builder.setTitle("Rename category").setView(v).setNegativeButton("Cancel", null).setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    String str = textInputEditText.getText().toString();
-                                    if (!str.equals("")) {
-                                        SharedPreferences categoryName = getApplicationContext().getSharedPreferences("categories", Context.MODE_PRIVATE);
-                                        SharedPreferences categoryList = getApplicationContext().getSharedPreferences(categories.get(position), Context.MODE_PRIVATE);
-
-                                        Map<String, ?> map = categoryList.getAll();
-                                        Set<String> set = map.keySet();
-                                        Iterator iterator = set.iterator();
-
-                                        SharedPreferences.Editor editor = categoryName.edit();
-                                        editor.remove(categories.get(position));
-                                        editor.putString(str, "true");
-                                        editor.commit();
-
-                                        SharedPreferences newCategoryName = getApplicationContext().getSharedPreferences(str, Context.MODE_PRIVATE);
-                                        while (iterator.hasNext()) {
-                                            String str1 = iterator.next().toString();
-                                            newCategoryName.edit().putString(str1, categoryList.getString(str1, null)).commit();
-                                        }
-
-                                        categoryList.edit().clear().commit();
-
-                                        categories.remove(position);
-                                        categories.add(position, str);
-                                        notifyDataSetChanged();
-                                    }
-                                }
-                            }).setCancelable(false);
-
-                            builder.show();
-                        }
-                    });
-
-                    categoryComponentHolder1.delete.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("categories", Context.MODE_PRIVATE);
-                            SharedPreferences sharedPreferences1 = getApplicationContext().getSharedPreferences(categories.get(position), Context.MODE_PRIVATE);
-                            sharedPreferences1.edit().clear().commit();
-                            sharedPreferences.edit().remove(categories.get(position)).commit();
-                            categories.remove(position);
-                            notifyDataSetChanged();
-                        }
-                    });
-
-                    categoryComponentHolder1.category.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            SharedPreferences selectedCategory = getApplicationContext().getSharedPreferences(categoryComponentHolder1.category.getText().toString(), Context.MODE_PRIVATE);
-                            Map<String, ?> map = selectedCategory.getAll();
-                            Set<String> set = map.keySet();
-                            Iterator iterator = set.iterator();
-                            List<String> list = new ArrayList<>();
-
-                            while (iterator.hasNext()) {
-                                list.add(iterator.next().toString());
+                        categoryComponentHolder1.category.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                listViewPage = Values.PAGE_WRONG_CATEGORIES;
+                                Adapter adapter = new WrongCategoryComponentsAdapter(context, R.layout.wrong_category_components_layout, data.getList(Values.WRONG_WORDS));
+                                title.setText(Values.WRONG_WORDS);
+                                categoryListView.setAdapter((WrongCategoryComponentsAdapter) adapter);
                             }
+                        });
 
-                            Adapter adapter = new CategoryComponentsAdapter(context, R.layout.word_meaning_layout, list);
-                            title.setText(categoryComponentHolder1.category.getText());
-                            categoryListView.setAdapter((CategoryComponentsAdapter) adapter);
+                    } else {
+
+                        int size = data.getSize(categories.get(position));
+                        int prog = size - data.getSize(categories.get(position) + " Wrong");
+
+                        if (prog == 0) {
+                            categoryComponentHolder1.progressBar.setProgress(prog);
+                        } else {
+                            categoryComponentHolder1.progressBar.setProgress((prog * 100) / size);
                         }
-                    });
+
+                        categoryComponentHolder1.progCount.setText(prog + "");
+                        categoryComponentHolder1.maxCount.setText(size + "");
+
+                        categoryComponentHolder1.edit.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(CategoryActivity.this);
+                                View v = LayoutInflater.from(CategoryActivity.this).inflate(R.layout.category_add_layout, null);
+                                com.google.android.material.textfield.TextInputEditText textInputEditText = v.findViewById(R.id.category_material_etxt);
+                                com.google.android.material.textfield.TextInputLayout textInputLayout = v.findViewById(R.id.category_material_inputlayout);
+                                textInputLayout.setHint(categories.get(position));
+
+                                builder.setTitle("Rename category").setView(v).setNegativeButton("Cancel", null).setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        String str = textInputEditText.getText().toString();
+                                        if (!str.equals("")) {
+
+                                            data.renameCategory(categories.get(position), str);
+                                            categories.remove(position);
+                                            categories.add(position, str);
+                                            notifyDataSetChanged();
+                                        }
+                                    }
+                                }).setCancelable(false);
+
+                                builder.show();
+                            }
+                        });
+
+                        categoryComponentHolder1.delete.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                data.deleteCategory(categories.get(position));
+                                categories.remove(position);
+                                notifyDataSetChanged();
+                            }
+                        });
+
+                        categoryComponentHolder1.category.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                listViewPage = Values.PAGE_CATEGORY;
+                                Adapter adapter = new CategoryComponentsAdapter(context, R.layout.word_meaning_layout, data.getList(categoryComponentHolder1.category.getText().toString()));
+                                title.setText(categoryComponentHolder1.category.getText());
+                                categoryListView.setAdapter((CategoryComponentsAdapter) adapter);
+                            }
+                        });
+
+                    }
 
                     categoryComponentHolder1.category.setText(categories.get(position));
                     convertView.setTag(categoryComponentHolder1);
@@ -314,8 +306,22 @@ public class CategoryActivity extends AppCompatActivity {
                     categoryComponentHolder = (CategoryComponentHolder) convertView.getTag();
 
                     categoryComponentHolder.category.setText(categories.get(position));
+                    int size = data.getSize(categories.get(position));
+                    int prog = size - data.getSize(categories.get(position) + " Wrong");
+
+                    if (prog == 0) {
+                        categoryComponentHolder.progressBar.setProgress(prog);
+                    } else {
+                        categoryComponentHolder.progressBar.setProgress((prog * 100) / size);
+                    }
+
+                    categoryComponentHolder.progCount.setText(prog + "");
+                    categoryComponentHolder.maxCount.setText(size + "");
                 }
-            } else {
+            }  else {
+
+                // word and meaning list view
+
                 ListWordsHolder listWordsHolder = new ListWordsHolder();
                 SharedPreferences category = getApplicationContext().getSharedPreferences(title.getText().toString(), Context.MODE_PRIVATE);
 
@@ -326,8 +332,10 @@ public class CategoryActivity extends AppCompatActivity {
                     ListWordsHolder listWordsHolder1 = new ListWordsHolder();
                     listWordsHolder1.word = (TextView) convertView.findViewById(R.id.category_word);
                     listWordsHolder1.meaning = (TextView) convertView.findViewById(R.id.category_meaning);
+                    listWordsHolder1.no = (TextView) convertView.findViewById(R.id.category_no);
 
                     listWordsHolder1.word.setText(categories.get(position));
+                    listWordsHolder1.no.setText((position + 1) + "");
                     listWordsHolder1.meaning.setText(category.getString(categories.get(position), "null"));
 
                     listWordsHolder1.word.setOnClickListener(new View.OnClickListener() {
@@ -338,8 +346,7 @@ public class CategoryActivity extends AppCompatActivity {
                             builder.setTitle(listWordsHolder1.word.getText().toString()).setNeutralButton("Back", null).setNegativeButton("Delete", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(title.getText().toString(), Context.MODE_PRIVATE);
-                                    sharedPreferences.edit().remove(listWordsHolder1.word.getText().toString()).commit();
+                                    data.deleteWordAndMeaning(title.getText().toString(), listWordsHolder1.word.getText().toString());
                                     categories.remove(position);
                                     notifyDataSetChanged();
                                 }
@@ -358,12 +365,7 @@ public class CategoryActivity extends AppCompatActivity {
                                             String str = textInputEditText.getText().toString();
 
                                             if (!str.equals(listWordsHolder1.word.getText().toString())) {
-                                                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(title.getText().toString(), Context.MODE_PRIVATE);
-
-                                                String meaning = sharedPreferences.getString(listWordsHolder1.word.getText().toString(), null);
-                                                sharedPreferences.edit().remove(listWordsHolder1.word.getText().toString()).commit();
-
-                                                sharedPreferences.edit().putString(str, meaning).commit();
+                                                data.renameWord(title.getText().toString(), listWordsHolder1.word.getText().toString(), str);
                                                 categories.remove(position);
                                                 categories.add(position, str);
                                                 notifyDataSetChanged();
@@ -383,8 +385,7 @@ public class CategoryActivity extends AppCompatActivity {
                             builder.setTitle(listWordsHolder1.meaning.getText().toString()).setNeutralButton("Back", null).setNegativeButton("Delete", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(title.getText().toString(), Context.MODE_PRIVATE);
-                                    sharedPreferences.edit().remove(listWordsHolder1.word.getText().toString()).commit();
+                                    data.deleteWordAndMeaning(title.getText().toString(), listWordsHolder1.word.getText().toString());
                                     categories.remove(position);
                                     notifyDataSetChanged();
                                 }
@@ -403,9 +404,7 @@ public class CategoryActivity extends AppCompatActivity {
                                             String newMeaning = textInputEditText.getText().toString();
 
                                             if (!newMeaning.equals(listWordsHolder1.meaning.getText().toString())) {
-                                                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(title.getText().toString(), Context.MODE_PRIVATE);
-
-                                                sharedPreferences.edit().putString(categories.get(position), newMeaning).commit();
+                                                data.renameMeaning(title.getText().toString(), categories.get(position), newMeaning);
                                                 notifyDataSetChanged();
                                             }
                                         }
@@ -420,6 +419,7 @@ public class CategoryActivity extends AppCompatActivity {
                     listWordsHolder = (ListWordsHolder) convertView.getTag();
 
                     listWordsHolder.word.setText(categories.get(position));
+                    listWordsHolder.no.setText((position + 1) + "");
                     listWordsHolder.meaning.setText(category.getString(categories.get(position), "null"));
 
                 }
@@ -432,13 +432,97 @@ public class CategoryActivity extends AppCompatActivity {
         }
     }
 
+    private class WrongCategoryComponentsAdapter extends ArrayAdapter<String> {
+        int resource;
+        List<String> catecories;
+        Context context;
+
+        public WrongCategoryComponentsAdapter(@NonNull Context context, int resource, @NonNull List<String> objects) {
+            super(context, resource, objects);
+            this.resource = resource;
+            catecories = objects;
+            this.context = context;
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+
+            if (listViewPage == Values.PAGE_WRONG_CATEGORIES) {
+
+                WrongCategoryHolder wrongCategoryHolder = new WrongCategoryHolder();
+
+                if (convertView == null) {
+                    LayoutInflater inflater = LayoutInflater.from(getContext());
+                    convertView = inflater.inflate(resource, parent, false);
+
+                    WrongCategoryHolder wrongCategoryHolder1 = new WrongCategoryHolder();
+                    wrongCategoryHolder1.category = (TextView) convertView.findViewById(R.id.wrong_catgory_component_textview);
+                    wrongCategoryHolder1.count = (TextView) convertView.findViewById(R.id.wrong_catgory_component_count);
+
+                    wrongCategoryHolder1.category.setText(catecories.get(position));
+                    wrongCategoryHolder1.count.setText(data.getSize(wrongCategoryHolder1.category.getText().toString()) + "");
+
+                    wrongCategoryHolder1.category.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            listViewPage = Values.PAGE_WRONG_CATEGORY;
+                            title.setText(wrongCategoryHolder1.category.getText().toString());
+                            Adapter adapter = new WrongCategoryComponentsAdapter(context, R.layout.word_meaning_layout, data.getList(wrongCategoryHolder1.category.getText().toString()));
+                            categoryListView.setAdapter((WrongCategoryComponentsAdapter) adapter);
+                        }
+                    });
+
+                    convertView.setTag(wrongCategoryHolder1);
+
+                } else {
+                    wrongCategoryHolder = (WrongCategoryHolder) convertView.getTag();
+                    wrongCategoryHolder.category.setText(catecories.get(position));
+                    wrongCategoryHolder.count.setText(data.getSize(wrongCategoryHolder.category.getText().toString()) + "");
+                }
+
+            } else {
+
+                ListWordsHolder listWordsHolder = new ListWordsHolder();
+                if (convertView == null) {
+                    LayoutInflater inflater = LayoutInflater.from(getContext());
+                    convertView = inflater.inflate(resource, parent, false);
+
+                    ListWordsHolder listWordsHolder1 = new ListWordsHolder();
+                    listWordsHolder1.no = convertView.findViewById(R.id.category_no);
+                    listWordsHolder1.word = convertView.findViewById(R.id.category_word);
+                    listWordsHolder1.meaning = convertView.findViewById(R.id.category_meaning);
+
+
+                    listWordsHolder1.no.setText((position + 1) + "");
+                    listWordsHolder1.word.setText(catecories.get(position));
+                    listWordsHolder1.meaning.setText(data.getValue(title.getText().toString(), catecories.get(position)));
+
+                    convertView.setTag(listWordsHolder1);
+                } else {
+                    listWordsHolder = (ListWordsHolder) convertView.getTag();
+                    listWordsHolder.no.setText((position + 1) + "");
+                    listWordsHolder.word.setText(catecories.get(position));
+                    listWordsHolder.meaning.setText(data.getValue(title.getText().toString(), catecories.get(position)));
+                }
+
+            }
+
+            return convertView;
+        }
+    }
+
     public class CategoryComponentHolder {
-        TextView category;
+        TextView category, progCount, maxCount;
         ImageButton edit, delete;
         ProgressBar progressBar;
     }
 
     public class ListWordsHolder {
-        TextView word, meaning;
+        TextView word, meaning, no;
+    }
+
+    public class WrongCategoryHolder {
+        TextView category, count;
     }
 }

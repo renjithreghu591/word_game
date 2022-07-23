@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 com.google.android.material.textfield.MaterialAutoCompleteTextView autoCompleteTextView = v.findViewById(R.id.playingconfiguration_material_autotxt);
                 com.google.android.material.textfield.TextInputLayout textInputLayout = v.findViewById(R.id.playingconfiguration_material_inputlayout);
 
-                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("categories", Context.MODE_PRIVATE);
+                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(Values.CATEGORIES, Context.MODE_PRIVATE);
 
                 Map<String, ?> map = sharedPreferences.getAll();
                 Set<String> set = map.keySet();
@@ -61,11 +61,14 @@ public class MainActivity extends AppCompatActivity {
 
                 while (iterator.hasNext()) {
                     String str = iterator.next().toString();
-                    SharedPreferences sharedPreferences1 = getApplicationContext().getSharedPreferences(str, Context.MODE_PRIVATE);
-                    Map<String, ?> map1 = sharedPreferences1.getAll();
-                    if (map1.size() > 0) {
-                        list.add(str);
+                    if (!str.equals(Values.WRONG_WORDS)) {
+                        SharedPreferences sharedPreferences1 = getApplicationContext().getSharedPreferences(str, Context.MODE_PRIVATE);
+                        Map<String, ?> map1 = sharedPreferences1.getAll();
+                        if (map1.size() > 0) {
+                            list.add(str);
+                        }
                     }
+
                 }
 
                 ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, R.layout.autotextview_categories_layout, list);

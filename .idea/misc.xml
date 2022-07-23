@@ -6,6 +6,7 @@
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/drawable/bg_etxt.xml" value="0.1505" />
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/drawable/bg_list_view.xml" value="0.104" />
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/drawable/bg_progress.xml" value="0.126" />
+        <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/drawable/bg_wrong_category_textview.xml" value="0.126" />
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/drawable/ic_baseline_add_24.xml" value="0.104" />
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/drawable/ic_delete.xml" value="0.116" />
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/drawable/ic_edit.xml" value="0.126" />
@@ -28,6 +29,7 @@
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/layout/playing_configuration_layout.xml" value="0.18795289855072464" />
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/layout/word_list_layout.xml" value="0.18795289855072464" />
         <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/layout/word_meaning_layout.xml" value="0.22" />
+        <entry key="..\:/Android/Sample Apps/WordGame/app/src/main/res/layout/wrong_category_components_layout.xml" value="0.2" />
       </map>
     </option>
   </component>
